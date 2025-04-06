@@ -56,7 +56,7 @@ class Scene(WindowConfig):
         self.floor = SceneObject(floor_mesh, floor_tex, position=Vector3([0, -0.01, 0]))
         
         # Setup orbit camera params
-        self.cam = OrbitCamera()
+        self.cam = OrbitCamera(radius=2)
         self.cam_speed = 2.5 # Camera speed when moving
 
         # OpenCV webcam
