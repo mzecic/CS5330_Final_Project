@@ -57,7 +57,8 @@ class Scene(WindowConfig):
         # Load the floor
         floor_mesh = self.load_scene("models/floor.obj").root_nodes[0].mesh.vao
         floor_tex = self.load_texture_2d("textures/tile_floor.jpg")
-        self.floor = SceneObject(floor_mesh, floor_tex, position=Vector3([0, -0.01, 0]))
+        self.floor = SceneObject(floor_mesh, floor_tex)
+        self.floor.position = list([0, -0.01, 0])
         
         # Setup orbit camera params
         self.cam = OrbitCamera(radius=2)
@@ -212,7 +213,7 @@ class Scene(WindowConfig):
         if self.wnd.is_key_pressed(keys.E):
             self.cam.zoom(zoom_speed)
 
-    def handle_gesture(object, frame_time):
+    def handle_gesture(self, object, frame_time):
         # Would look something like the key event handler above
         pass
 
