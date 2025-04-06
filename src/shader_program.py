@@ -2,6 +2,11 @@ from moderngl import Context, Program
 
 class ShaderProgram:
     def __init__(self, ctx: Context):
+        """Initializes the shader program to hold one or more programs
+
+        Args:
+            ctx (Context): The modernGL context
+        """
         self.ctx = ctx
         self.programs = {}
 
@@ -31,4 +36,12 @@ class ShaderProgram:
         return program
     
     def get(self, name) -> Program | None:
+        """Returns the program from memory if it's found. Otherwise None
+
+        Args:
+            name (str): The name of the program
+
+        Returns:
+            Program | None: The shader program requested
+        """
         return self.programs.get(name)

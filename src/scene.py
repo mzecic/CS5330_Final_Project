@@ -26,6 +26,10 @@ class Scene(WindowConfig):
     use_imgui = True
 
     def __init__(self, **kwargs):
+        """Initializes the program and its components. Args include the modernGL context, window size,
+        aspect ratio, etc. It will also create and load a shader program, an controllable orbit camera,
+        the objects to render, and their textures.
+        """
         super().__init__(**kwargs)
         self.wnd.ctx.error
         
@@ -42,7 +46,7 @@ class Scene(WindowConfig):
         print(f"Loaded shader program successfully")
 
         # Verify the model and texture exist
-        # assert Path(self.resource_dir, "models/crate.obj").exists(), "Model not found"
+        assert Path(self.resource_dir, "models/bunny.obj").exists(), "Bunny obj file not found"
         assert Path(self.resource_dir, "textures/bunny.jpg").exists(), "Bunny texture not found"
 
         # Load the crate
@@ -62,22 +66,48 @@ class Scene(WindowConfig):
         # OpenCV webcam
         self.cap = cv2.VideoCapture(0)
 
-    def on_render(self, time, frame_time) -> None:
+    def on_render(self, time:float , frame_time: float) -> None:
+        """The rendering pipeline for this program.
+
+        Args:
+            time (float): The time of the start of the rendering.
+            frame_time (float): The time since the last frame
+        """
         # Read a frame from webcam
         ret, frame = self.cap.read()
         if ret:
             frame = cv2.flip(frame, 1)
             cv2.imshow("Webcam", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            ##### TODO: send frame to the model to parse for commands.
+
+            if cv2.waitKey(1) & 0xFF == 27: # ESC key
                 self.wnd.close()
         
+        # Camera event listener. 
+        # WASD will move camera orbit camera Up/Down/Left/Right
+        # Q/E will zoom in/out
+        # Up/Down/Left/Right arrows will pan the camera to a new position as well as orbit new point.
+        # Panning is relative to the camera axis projected onto world X-Z for natural
         self.handle_movement(frame_time)
-        # Todo: Handle object works good one position, but adjusts both scales and rotations for some reason
-        self.handle_object(self.object, frame_time)
 
+        # Object event listener.
+        # O/K/L/; will translate the object along the X- or Z- axis (absolute, world scales)
+        # RT/FG/VB will rotate the model about the X, Y, Z axes, respectively
+        # YU/HJ/NM will scale the model in the X, Y, Z axes, respectively
+        self.handle_object(self.object, frame_time) # Keyboard inputs
+ 
+        ##### Model command inputs go here
+        # Send commands from gesture to the object... The declaration can change
+        self.handle_gesture(self.object, frame_time)
+        
+
+        #####
+
+        # This sets the background color and enables a depth test to improve rendering
         self.ctx.clear(0.1, 0.1, 0.1)
         self.ctx.enable(self.ctx.DEPTH_TEST)
         
+        # Builds the view and projection matrices. Model will be created at each mesh's render
         view = self.cam.get_view_matrix()
         proj = Matrix44.perspective_projection(
             fovy=45.0,
@@ -87,36 +117,56 @@ class Scene(WindowConfig):
             dtype='f4'
         )
 
+        # Establish the uniforms for the view and projection matrices
         self.prog['view'].write(view.astype('f4').tobytes())
         self.prog['proj'].write(proj.astype('f4').tobytes())
                 
+        # Renders each mesh individually. Internally, it will determine its texture and create a model matrix
         self.object.render(self.prog, texture_unit=0)
         self.floor.render(self.prog, texture_unit=1, uv_scale=1)
-        print(f"Object: Position: {self.object.position}, Rotation: {self.object.rotation}, Scale: {self.object.scale}")
-        print(f"Floor: Position: {self.floor.position}, Rotation: {self.floor.rotation}, Scale: {self.floor.scale}")
 
-    def handle_object(self, object: SceneObject, dt):
+    def handle_object(self, object: SceneObject, dt:float) -> None:
+        """Key listener to adjust scene object parameters. Currently only supports adjusting one object
+        at any time.
+
+        Args:
+            object (SceneObject): The object to manipulate
+            dt (float): The delta time from the last frame.
+        """
         keys = self.wnd.keys
         speed = 2.0 * dt
         rot_speed = 45.0 * dt
         scale_speed = 0.5 * dt
 
-        if self.wnd.is_key_pressed(keys.I): object.position[2] -= speed # Forward
-        if self.wnd.is_key_pressed(keys.K): object.position[2] += speed # Back
-        if self.wnd.is_key_pressed(keys.J): object.position[0] -= speed # Left
-        if self.wnd.is_key_pressed(keys.L): object.position[0] += speed # Right
-        if self.wnd.is_key_pressed(keys.U): object.position[1] += speed # Up
-        if self.wnd.is_key_pressed(keys.O): object.position[1] -= speed # Down
+        # Translations
+        if self.wnd.is_key_pressed(keys.O): object.position[2] -= speed # Forward
+        if self.wnd.is_key_pressed(keys.L): object.position[2] += speed # Back
 
-        if self.wnd.is_key_pressed(keys.COMMA): object.rotation[1] += rot_speed # ',' Rotate about Y axis
-        if self.wnd.is_key_pressed(keys.PERIOD): object.rotation[1] -= rot_speed # '.' Rotate about Y axis
-            
-        if self.wnd.is_key_pressed(keys.N):  
-            for i in range(3):
-                object.scale[i] = max(0.1, object.scale[i] - scale_speed)
-        if self.wnd.is_key_pressed(keys.M): 
-            for i in range(3):
-                object.scale[i] = min(10.0, object.scale[i] + scale_speed)
+        if self.wnd.is_key_pressed(keys.K): object.position[0] -= speed # Left
+        if self.wnd.is_key_pressed(keys.SEMICOLON): object.position[0] += speed # Right
+
+        if self.wnd.is_key_pressed(keys.I): object.position[1] += speed # Up
+        if self.wnd.is_key_pressed(keys.P): object.position[1] -= speed # Down
+
+        # Rotations
+        if self.wnd.is_key_pressed(keys.R): object.rotation[0] += rot_speed # ',' Rotate about X axis
+        if self.wnd.is_key_pressed(keys.T): object.rotation[0] -= rot_speed # '.' Rotate about X axis
+        
+        if self.wnd.is_key_pressed(keys.F): object.rotation[1] += rot_speed # ',' Rotate about Y axis
+        if self.wnd.is_key_pressed(keys.G): object.rotation[1] -= rot_speed # '.' Rotate about Y axis
+
+        if self.wnd.is_key_pressed(keys.V): object.rotation[2] += rot_speed # ',' Rotate about Y axis
+        if self.wnd.is_key_pressed(keys.B): object.rotation[2] -= rot_speed # '.' Rotate about Y axis    
+
+        # Scales
+        if self.wnd.is_key_pressed(keys.Y): object.scale[0] = max(0.1, object.scale[0] - scale_speed)
+        if self.wnd.is_key_pressed(keys.U): object.scale[0] = min(10.0, object.scale[0] + scale_speed)
+
+        if self.wnd.is_key_pressed(keys.H): object.scale[1] = max(0.1, object.scale[1] - scale_speed)
+        if self.wnd.is_key_pressed(keys.J): object.scale[1] = min(10.0, object.scale[1] + scale_speed)
+
+        if self.wnd.is_key_pressed(keys.N): object.scale[2] = max(0.1, object.scale[2] - scale_speed)
+        if self.wnd.is_key_pressed(keys.M): object.scale[2] = min(10.0, object.scale[2] + scale_speed)
 
         if self.wnd.is_key_pressed(keys.BACKSPACE):
             object.position = [0, 0, 0]
@@ -124,7 +174,13 @@ class Scene(WindowConfig):
             object.scale = [1, 1, 1]
 
 
-    def handle_movement(self, dt):
+    def handle_movement(self, dt: float) -> None:
+        """Key listener to control the orbital camera. It may be rotated about its central point,
+        panned across the scene, or brought in closer/further from the center (zoom)
+
+        Args:
+            dt (float): time elapsed since the previous frame
+        """
         keys = self.wnd.keys
         speed = self.cam_speed * dt
         rot_speed = 90.0 * dt
@@ -146,9 +202,9 @@ class Scene(WindowConfig):
         if self.wnd.is_key_pressed(keys.S):
             self.cam.rotate(0, rot_speed)
         if self.wnd.is_key_pressed(keys.A):
-            self.cam.rotate(-rot_speed, 0)
-        if self.wnd.is_key_pressed(keys.D):
             self.cam.rotate(rot_speed, 0)
+        if self.wnd.is_key_pressed(keys.D):
+            self.cam.rotate(-rot_speed, 0)
 
         # Zoom Controls
         if self.wnd.is_key_pressed(keys.Q):
@@ -156,7 +212,13 @@ class Scene(WindowConfig):
         if self.wnd.is_key_pressed(keys.E):
             self.cam.zoom(zoom_speed)
 
+    def handle_gesture(object, frame_time):
+        # Would look something like the key event handler above
+        pass
+
     def destroy(self):
+        """Cleans up memory upon shutdown
+        """
         # Clean up OpenCV when window closes
         self.cap.release()
         cv2.destroyAllWindows()

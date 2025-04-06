@@ -3,6 +3,14 @@ from math import radians, sin, cos
 
 class OrbitCamera:
     def __init__(self, center:Vector3=Vector3([0.0, 0.0, 0.0]), radius:float=5.0, yaw:float=0.0, pitch:float=0.0):
+        """Initializes an orbit camera to view the scene.
+
+        Args:
+            center (Vector3, optional): Sets the center point (world coordinates). Defaults to Vector3([0.0, 0.0, 0.0]).
+            radius (float, optional): Sets the radius (zoom). Defaults to 5.0.
+            yaw (float, optional): Sets the yaw angle. Defaults to 0.0.
+            pitch (float, optional): Sets the pitch angle. Defaults to 0.0.
+        """
         self.center = center
         self.radius = radius
         self.yaw = yaw
@@ -11,7 +19,7 @@ class OrbitCamera:
         self.update_vectors()
 
     def update_vectors(self):
-        """Updates the camera view vectors
+        """Updates the camera view vectors 
         """
         yaw_rad, pitch_rad = radians(self.yaw), radians(self.pitch)
 
