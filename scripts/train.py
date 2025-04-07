@@ -43,8 +43,8 @@ class GestureDataset(Dataset):
               ...
         It uses MediaPipe Hands to extract landmark features.
         """
-        self.samples = []  # List of (image_path, label_index)
-        self.labels = []   # Sorted list of label names
+        self.samples = []
+        self.labels = []
         # Get sorted list of subfolder names as labels
         self.labels = sorted([d for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d))])
         label_to_idx = {label: idx for idx, label in enumerate(self.labels)}
@@ -71,8 +71,9 @@ class GestureDataset(Dataset):
 
 # ----- Main Training Loop -----
 def main():
-    # Path to your dataset folder (with subfolders as labels)
-    dataset_dir = "data_model"  
+    # Path to dataset folder - subfolders are ghoing to get read as labels here
+    # Once the model trains, everytime we add a new subfolder, we need to rearrange the class dictionay in evaluate.py because it needs to follow alphabetical order to correclty display labels
+    dataset_dir = "data_model"
 
     # Create dataset and DataLoader
     dataset = GestureDataset(dataset_dir)
