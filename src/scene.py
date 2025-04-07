@@ -7,8 +7,8 @@ from pathlib import Path
 from orbit_camera import OrbitCamera
 from shader_program import ShaderProgram
 from scene_object import SceneObject
-from imgui_bundle import imgui
-from moderngl_window.integrations.imgui_bundle import ModernglWindowRenderer
+# from imgui_bundle import imgui
+# from moderngl_window.integrations.imgui_bundle import ModernglWindowRenderer
 
 
 # pip install moderngl moderngl-window pywavefront moderngl-window[imgui]
@@ -32,7 +32,7 @@ class Scene(WindowConfig):
         """
         super().__init__(**kwargs)
         self.wnd.ctx.error
-        
+
         self.shader_program = ShaderProgram(self.ctx)
         assert Path(self.resource_dir, "shaders/vertex.glsl").exists(), "Vertex shader program not found"
         assert Path(self.resource_dir, "shaders/fragment.glsl").exists(), "Fragment shader program not found"
@@ -59,13 +59,13 @@ class Scene(WindowConfig):
         floor_tex = self.load_texture_2d("textures/tile_floor.jpg")
         self.floor = SceneObject(floor_mesh, floor_tex)
         self.floor.position = list([0, -0.01, 0])
-        
+
         # Setup orbit camera params
         self.cam = OrbitCamera(radius=2)
         self.cam_speed = 2.5 # Camera speed when moving
 
         # OpenCV webcam
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1)
 
     def on_render(self, time:float , frame_time: float) -> None:
         """The rendering pipeline for this program.
@@ -83,8 +83,8 @@ class Scene(WindowConfig):
 
             if cv2.waitKey(1) & 0xFF == 27: # ESC key
                 self.wnd.close()
-        
-        # Camera event listener. 
+
+        # Camera event listener.
         # WASD will move camera orbit camera Up/Down/Left/Right
         # Q/E will zoom in/out
         # Up/Down/Left/Right arrows will pan the camera to a new position as well as orbit new point.
@@ -96,18 +96,18 @@ class Scene(WindowConfig):
         # RT/FG/VB will rotate the model about the X, Y, Z axes, respectively
         # YU/HJ/NM will scale the model in the X, Y, Z axes, respectively
         self.handle_object(self.object, frame_time) # Keyboard inputs
- 
+
         ##### Model command inputs go here
         # Send commands from gesture to the object... The declaration can change
         self.handle_gesture(self.object, frame_time)
-        
+
 
         #####
 
         # This sets the background color and enables a depth test to improve rendering
         self.ctx.clear(0.1, 0.1, 0.1)
         self.ctx.enable(self.ctx.DEPTH_TEST)
-        
+
         # Builds the view and projection matrices. Model will be created at each mesh's render
         view = self.cam.get_view_matrix()
         proj = Matrix44.perspective_projection(
@@ -121,7 +121,7 @@ class Scene(WindowConfig):
         # Establish the uniforms for the view and projection matrices
         self.prog['view'].write(view.astype('f4').tobytes())
         self.prog['proj'].write(proj.astype('f4').tobytes())
-                
+
         # Renders each mesh individually. Internally, it will determine its texture and create a model matrix
         self.object.render(self.prog, texture_unit=0)
         self.floor.render(self.prog, texture_unit=1, uv_scale=1)
@@ -152,12 +152,12 @@ class Scene(WindowConfig):
         # Rotations
         if self.wnd.is_key_pressed(keys.R): object.rotation[0] += rot_speed # ',' Rotate about X axis
         if self.wnd.is_key_pressed(keys.T): object.rotation[0] -= rot_speed # '.' Rotate about X axis
-        
+
         if self.wnd.is_key_pressed(keys.F): object.rotation[1] += rot_speed # ',' Rotate about Y axis
         if self.wnd.is_key_pressed(keys.G): object.rotation[1] -= rot_speed # '.' Rotate about Y axis
 
         if self.wnd.is_key_pressed(keys.V): object.rotation[2] += rot_speed # ',' Rotate about Y axis
-        if self.wnd.is_key_pressed(keys.B): object.rotation[2] -= rot_speed # '.' Rotate about Y axis    
+        if self.wnd.is_key_pressed(keys.B): object.rotation[2] -= rot_speed # '.' Rotate about Y axis
 
         # Scales
         if self.wnd.is_key_pressed(keys.Y): object.scale[0] = max(0.1, object.scale[0] - scale_speed)
@@ -187,7 +187,7 @@ class Scene(WindowConfig):
         rot_speed = 90.0 * dt
         zoom_speed = 2.0 * dt
 
-        # Pan control        
+        # Pan control
         if self.wnd.is_key_pressed(keys.UP):
             self.cam.pan(0, 0, 1, speed)
         if self.wnd.is_key_pressed(keys.DOWN):

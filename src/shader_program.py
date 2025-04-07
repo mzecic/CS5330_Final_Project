@@ -1,4 +1,5 @@
 from moderngl import Context, Program
+from typing import Optional
 
 class ShaderProgram:
     def __init__(self, ctx: Context):
@@ -17,14 +18,14 @@ class ShaderProgram:
             name (str): the shader program name
             vertex_path (str): path to the vertex shader
             fragment_path (str): path to the fragment shader
-        
+
         Returns: the shader program
         """
         if name in self.programs:
             return self.programs[name]
-        
+
         with open(vertex_path, 'r') as vert:
-            vertex_src = vert.read()    
+            vertex_src = vert.read()
         with open(fragment_path, 'r') as frag:
             fragment_src = frag.read()
 
@@ -34,8 +35,8 @@ class ShaderProgram:
         )
         self.programs[name] = program
         return program
-    
-    def get(self, name) -> Program | None:
+
+    def get(self, name) -> Optional[Program]:
         """Returns the program from memory if it's found. Otherwise None
 
         Args:

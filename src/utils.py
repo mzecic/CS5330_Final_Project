@@ -2,7 +2,8 @@ import cv2
 import os
 
 # Define the folder path where images will be saved (data/rotate)
-output_folder = os.path.join("data_model", "hold")
+gesture_name = "rotate"
+output_folder = os.path.join("data_model", gesture_name)
 
 # Create the folder if it doesn't exist
 if not os.path.exists(output_folder):
@@ -33,7 +34,7 @@ while True:
     key = cv2.waitKey(1) & 0xFF
     if key == ord('c'):
         # Build the filename and save the image
-        img_name = f"rotate_{img_counter:03d}.jpg"
+        img_name = f"{gesture_name}_{img_counter:03d}.jpg"
         save_path = os.path.join(output_folder, img_name)
         cv2.imwrite(save_path, frame)
         print(f"Captured {save_path}")
