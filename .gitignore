@@ -1,1 +1,2 @@
-*data_model/*
+# Ignore data_model directory and all its contents
+/data_model/
