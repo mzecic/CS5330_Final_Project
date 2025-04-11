@@ -46,12 +46,12 @@ class Scene(WindowConfig):
         print(f"Loaded shader program successfully")
 
         # Verify the model and texture exist
-        assert Path(self.resource_dir, "models/bunny.obj").exists(), "Bunny obj file not found"
-        assert Path(self.resource_dir, "textures/bunny.jpg").exists(), "Bunny texture not found"
+        assert Path(self.resource_dir, "models/crate.obj").exists(), "Bunny obj file not found"
+        assert Path(self.resource_dir, "textures/crate.jpg").exists(), "Bunny texture not found"
 
         # Load the crate
-        crate_mesh = self.load_scene("models/bunny.obj").root_nodes[0].mesh.vao
-        crate_tex = self.load_texture_2d("textures/bunny.jpg")
+        crate_mesh = self.load_scene("models/crate.obj").root_nodes[0].mesh.vao
+        crate_tex = self.load_texture_2d("textures/crate.jpg")
         self.object = SceneObject(crate_mesh, crate_tex, editable=True)
 
         # Load the floor

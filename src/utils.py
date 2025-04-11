@@ -2,7 +2,7 @@ import cv2
 import os
 
 # Define the folder path where images will be saved (data/rotate)
-gesture_name = "rotate"
+gesture_name = "grab_move_left"
 output_folder = os.path.join("data_model", gesture_name)
 
 # Create the folder if it doesn't exist
@@ -11,7 +11,7 @@ if not os.path.exists(output_folder):
     print(f"Created folder: {output_folder}")
 
 # Initialize video capture (0 for default webcam)
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 # Initialize a counter to name captured images
 img_counter = 0
@@ -29,7 +29,7 @@ while True:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
     # Show the frame
-    cv2.imshow("Capture Gesture - Rotate", frame)
+    cv2.imshow("Capture Gesture", frame)
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord('c'):
