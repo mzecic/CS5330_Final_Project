@@ -5,13 +5,14 @@ import numpy as np
 from src.model import GestureClassifier
 
 # Load your trained model weights
-num_classes = 4  # We will adjust trhis as we increase the number of gestures
+num_classes = 8  # We will adjust trhis as we increase the number of gestures
 model = GestureClassifier(num_classes=num_classes)
 model.load_state_dict(torch.load("gesture_classifier_weights.pth", map_location=torch.device('cpu')))
 model.eval()  # Set to evaluation mode
 
 # Define a mapping from class indices to gesture names
-class_names = {3: "swipe_right", 1: "none", 0: "hold", 2: "scale"} # This will also get adjusted as we add more gestures
+class_names = {0: "grab_move_left", 1: "grab_move_right", 2: "hold_left", 3: "hold_right", 4: "scale_left_hand",
+               5: "scale_right_hand", 6: "swipe_left_hand", 7: "swipe_right_hand"} # This will also get adjusted as we add more gestures
 
 # Set up MediaPipe Hands for video stream (for multi-hand detection)
 mp_hands = mp.solutions.hands
@@ -24,7 +25,7 @@ hands = mp_hands.Hands(
 mp_drawing = mp.solutions.drawing_utils
 
 # Open video stream using OpenCV
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()

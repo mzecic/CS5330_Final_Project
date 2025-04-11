@@ -33,7 +33,7 @@ class SceneObject:
         Sxyz = Matrix44.from_scale(self.scale)
 
         # Matrix multiplication L <- R
-        return Txyz @ Rz @ Ry @ Rx @ Sxyz
+        return Sxyz @ Rx @ Ry @ Rz @ Txyz
 
     def render(self, prog:Program, texture_unit=0, uv_scale=1.0):
         """Renders the object onto the scene.
